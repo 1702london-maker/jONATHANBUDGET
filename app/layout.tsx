@@ -35,13 +35,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180.png" />
         <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
-        <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="JB" />
-        <meta name="application-name" content="Jonathan Budgeting" />
-        <meta name="msapplication-TileColor" content="#0D9488" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js')`,
+          }}
+        />
       </head>
       <body>
         {children}
