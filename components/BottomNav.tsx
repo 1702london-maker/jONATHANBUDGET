@@ -1,7 +1,8 @@
 'use client'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { Home, List, CreditCard, Flag, PiggyBank } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
+import { Home, List, CreditCard, Flag, PiggyBank, LogOut } from 'lucide-react'
+import { setAuthed } from '@/lib/db'
 
 const tabs = [
   { href: '/', label: 'Home', Icon: Home },
@@ -13,6 +14,12 @@ const tabs = [
 
 export default function BottomNav() {
   const pathname = usePathname()
+  const router = useRouter()
+
+  function handleLogout() {
+    setAuthed(false)
+    router.replace('/')
+  }
 
   return (
     <nav
@@ -35,6 +42,13 @@ export default function BottomNav() {
             </Link>
           )
         })}
+        <button
+          onClick={handleLogout}
+          className="flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium text-slate-400 hover:text-red-500 transition-colors"
+        >
+          <LogOut size={20} strokeWidth={1.8} />
+          <span>Log out</span>
+        </button>
       </div>
     </nav>
   )
