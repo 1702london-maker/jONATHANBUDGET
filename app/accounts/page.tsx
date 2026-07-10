@@ -168,6 +168,13 @@ export default function AccountsPage() {
               className="flex items-center justify-center w-full border border-slate-200 rounded-xl py-3 text-sm text-slate-500 font-medium hover:border-teal-300 hover:text-teal-600 transition bg-white">
               Month-end reconciliation
             </Link>
+
+            {cfo && (
+              <Link href="/setup"
+                className="flex items-center justify-center w-full border border-teal-200 rounded-xl py-3 text-sm text-teal-600 font-medium hover:bg-teal-50 transition bg-white">
+                Edit baseline balances
+              </Link>
+            )}
           </>
         )}
       </main>
