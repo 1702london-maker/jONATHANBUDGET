@@ -148,15 +148,31 @@ export async function getKnownNames(): Promise<string[]> {
   return Array.from(new Set(data.map((r: { counterparty_name: string }) => r.counterparty_name))).sort()
 }
 
-// ── Auth (local only — single shared password) ────────────────────────────────
+// ── Auth (local only — two roles) ─────────────────────────────────────────────
+
+export type Role = 'jonathan' | 'cfo'
 
 export function isAuthed(): boolean {
   if (typeof window === 'undefined') return false
   return localStorage.getItem('jb_authed') === 'true'
 }
 
-export function setAuthed(val: boolean): void {
+export function getRole(): Role {
+  if (typeof window === 'undefined') return 'jonathan'
+  return (localStorage.getItem('jb_role') as Role) || 'jonathan'
+}
+
+export function isCFO(): boolean {
+  return getRole() === 'cfo'
+}
+
+export function setAuthed(val: boolean, role?: Role): void {
   if (typeof window === 'undefined') return
-  if (val) localStorage.setItem('jb_authed', 'true')
-  else localStorage.removeItem('jb_authed')
+  if (val) {
+    localStorage.setItem('jb_authed', 'true')
+    localStorage.setItem('jb_role', role || 'jonathan')
+  } else {
+    localStorage.removeItem('jb_authed')
+    localStorage.removeItem('jb_role')
+  }
 }

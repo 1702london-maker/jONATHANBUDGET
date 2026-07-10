@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Account } from '@/lib/types'
-import { getAccounts, upsertAccount, deleteAccount, isAuthed } from '@/lib/db'
+import { getAccounts, upsertAccount, deleteAccount, isAuthed, isCFO } from '@/lib/db'
 import { useRealtime } from '@/lib/useRealtime'
 import { formatCurrency, calcNetCurrent, calcNetPosition, calcTotalCreditOwed } from '@/lib/utils'
 import Header from '@/components/Header'
@@ -17,6 +17,7 @@ const TYPE_ICONS = { current: Building2, credit: CreditCard, cash: Banknote }
 export default function AccountsPage() {
   const router = useRouter()
   const [authed, setAuthed] = useState<boolean | null>(null)
+  const [cfo, setCfo] = useState(false)
   const [loading, setLoading] = useState(true)
   const [accounts, setAccounts] = useState<Account[]>([])
   const [editId, setEditId] = useState<string | null>(null)
@@ -35,6 +36,7 @@ export default function AccountsPage() {
     const ok = isAuthed()
     setAuthed(ok)
     if (!ok) { router.replace('/'); return }
+    setCfo(isCFO())
     load()
   }, [load, router])
 
@@ -109,7 +111,7 @@ export default function AccountsPage() {
                 <p className="text-xs text-slate-400 font-semibold uppercase tracking-wide mb-2 px-1">Current accounts and cash</p>
                 <div className="space-y-3">
                   {currentAccounts.map((acc) => (
-                    <AccountCard key={acc.id} acc={acc} editId={editId} editBalance={editBalance}
+                    <AccountCard key={acc.id} acc={acc} editId={editId} editBalance={editBalance} cfo={cfo}
                       onEdit={(a) => { setEditId(a.id); setEditBalance(a.current_balance.toString()) }}
                       onSave={saveEdit} onDelete={handleDelete} onChangeBalance={setEditBalance} />
                   ))}
@@ -122,7 +124,7 @@ export default function AccountsPage() {
                 <p className="text-xs text-slate-400 font-semibold uppercase tracking-wide mb-2 px-1">Credit cards — amount owed</p>
                 <div className="space-y-3">
                   {creditAccounts.map((acc) => (
-                    <AccountCard key={acc.id} acc={acc} editId={editId} editBalance={editBalance}
+                    <AccountCard key={acc.id} acc={acc} editId={editId} editBalance={editBalance} cfo={cfo}
                       onEdit={(a) => { setEditId(a.id); setEditBalance(a.current_balance.toString()) }}
                       onSave={saveEdit} onDelete={handleDelete} onChangeBalance={setEditBalance} />
                   ))}
@@ -130,7 +132,7 @@ export default function AccountsPage() {
               </div>
             )}
 
-            {addOpen ? (
+            {cfo && addOpen ? (
               <div className="bg-white rounded-xl border border-teal-200 p-4 space-y-3">
                 <h2 className="font-serif text-lg font-semibold text-slate-800">Add account</h2>
                 <input type="text" placeholder="Account name" value={newName} onChange={(e) => setNewName(e.target.value)}
@@ -154,13 +156,13 @@ export default function AccountsPage() {
                   <button onClick={() => setAddOpen(false)} className="flex-1 bg-slate-100 text-slate-600 font-semibold py-2.5 rounded-xl text-sm">Cancel</button>
                 </div>
               </div>
-            ) : (
+            ) : cfo ? (
               <button onClick={() => setAddOpen(true)}
                 className="flex items-center justify-center gap-2 w-full border-2 border-dashed border-slate-200 rounded-xl py-4 text-slate-400 hover:border-teal-300 hover:text-teal-600 transition">
                 <Plus size={18} />
                 <span className="font-medium text-sm">Add account</span>
               </button>
-            )}
+            ) : null}
 
             <Link href="/month-review"
               className="flex items-center justify-center w-full border border-slate-200 rounded-xl py-3 text-sm text-slate-500 font-medium hover:border-teal-300 hover:text-teal-600 transition bg-white">
@@ -174,8 +176,8 @@ export default function AccountsPage() {
   )
 }
 
-function AccountCard({ acc, editId, editBalance, onEdit, onSave, onDelete, onChangeBalance }: {
-  acc: Account; editId: string | null; editBalance: string
+function AccountCard({ acc, editId, editBalance, cfo, onEdit, onSave, onDelete, onChangeBalance }: {
+  acc: Account; editId: string | null; editBalance: string; cfo: boolean
   onEdit: (a: Account) => void; onSave: (a: Account) => void
   onDelete: (id: string) => void; onChangeBalance: (v: string) => void
 }) {
@@ -194,12 +196,14 @@ function AccountCard({ acc, editId, editBalance, onEdit, onSave, onDelete, onCha
             <p className="text-xs text-slate-400 capitalize">{acc.type} account</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          {isEditing
-            ? <button onClick={() => onSave(acc)} className="text-teal-600"><Check size={18} /></button>
-            : <button onClick={() => onEdit(acc)} className="text-slate-400 hover:text-slate-600"><Pencil size={16} /></button>}
-          <button onClick={() => onDelete(acc.id)} className="text-slate-300 hover:text-red-400"><Trash2 size={16} /></button>
-        </div>
+        {cfo && (
+          <div className="flex items-center gap-2">
+            {isEditing
+              ? <button onClick={() => onSave(acc)} className="text-teal-600"><Check size={18} /></button>
+              : <button onClick={() => onEdit(acc)} className="text-slate-400 hover:text-slate-600"><Pencil size={16} /></button>}
+            <button onClick={() => onDelete(acc.id)} className="text-slate-300 hover:text-red-400"><Trash2 size={16} /></button>
+          </div>
+        )}
       </div>
       <div className="mt-3">
         {isEditing ? (

@@ -3,7 +3,8 @@ import { useState } from 'react'
 import { setAuthed } from '@/lib/db'
 import { Eye, EyeOff } from 'lucide-react'
 
-const SHARED_PASSWORD = 'jonathan2024'
+const JONATHAN_PASSWORD = process.env.NEXT_PUBLIC_APP_PASSWORD || 'jonathan2024'
+const CFO_PASSWORD = process.env.NEXT_PUBLIC_CFO_PASSWORD || 'Efejohnson2164'
 
 interface LoginGateProps {
   onLogin: () => void
@@ -16,8 +17,11 @@ export default function LoginGate({ onLogin }: LoginGateProps) {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (pw === SHARED_PASSWORD) {
-      setAuthed(true)
+    if (pw === CFO_PASSWORD) {
+      setAuthed(true, 'cfo')
+      onLogin()
+    } else if (pw === JONATHAN_PASSWORD) {
+      setAuthed(true, 'jonathan')
       onLogin()
     } else {
       setError('Incorrect password. Please try again.')
@@ -28,11 +32,14 @@ export default function LoginGate({ onLogin }: LoginGateProps) {
   return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6">
       <div className="w-full max-w-sm">
-        <h1 className="font-serif text-4xl font-semibold text-slate-800 mb-2 text-center">
+        <div className="w-14 h-14 rounded-2xl bg-teal-600 flex items-center justify-center mx-auto mb-6">
+          <span className="text-white font-serif text-2xl font-bold">JB</span>
+        </div>
+        <h1 className="font-serif text-3xl font-semibold text-slate-800 mb-2 text-center">
           Jonathan Budgeting
         </h1>
-        <p className="text-center text-slate-500 text-sm mb-10">
-          Shared access — enter the password to continue
+        <p className="text-center text-slate-400 text-sm mb-10">
+          Enter your password to continue
         </p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="relative">
@@ -60,9 +67,6 @@ export default function LoginGate({ onLogin }: LoginGateProps) {
             Sign In
           </button>
         </form>
-        <p className="text-center text-xs text-slate-400 mt-8">
-          Both Jonathan and his adviser use the same login.
-        </p>
       </div>
     </div>
   )
