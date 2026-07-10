@@ -1,10 +1,10 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { getAccounts, upsertAccount, getPots, upsertPot, getSettings, updateSettings, isAuthed, isCFO } from '@/lib/db'
+import { getAccounts, upsertAccount, getPots, upsertPot, getSettings, updateSettings, isAuthed } from '@/lib/db'
 import { formatCurrency, calcNetCurrent, calcNetPosition } from '@/lib/utils'
 import { Account, Pot } from '@/lib/types'
-import { Loader2, Lock } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 
 const DEFAULT_ACCOUNTS: Account[] = [
   { id: 'acc-lloyds', name: 'Lloyds Current', type: 'current', current_balance: 0, baseline_balance: 0, last_updated_at: new Date().toISOString() },
@@ -25,21 +25,15 @@ export default function SetupPage() {
   const [ready, setReady] = useState(false)
   const [saving, setSaving] = useState(false)
   const [accounts, setAccounts] = useState<Account[]>(DEFAULT_ACCOUNTS)
-  const [cfo, setCfo] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
     if (!isAuthed()) { router.replace('/'); return }
-    const isCfo = isCFO()
-    setCfo(isCfo)
 
     async function init() {
       const [existingAccounts, existingPots, settings] = await Promise.all([
         getAccounts(), getPots(), getSettings(),
       ])
-
-      // Jonathan can't access setup if baseline already set
-      if (settings.baseline_set && !isCfo) { router.replace('/'); return }
 
       if (existingAccounts.length > 0) {
         setAccounts(existingAccounts)
@@ -83,21 +77,10 @@ export default function SetupPage() {
     <div className="min-h-screen bg-slate-50 px-4 py-8 pb-16">
       <div className="max-w-md mx-auto">
         <div className="mb-8">
-          <div className="flex items-center gap-2 mb-1">
-            <h1 className="font-serif text-3xl font-bold text-slate-800">Starting point</h1>
-            {cfo && (
-              <span className="text-xs bg-teal-100 text-teal-700 font-semibold px-2 py-0.5 rounded-full">CFO</span>
-            )}
-          </div>
+          <h1 className="font-serif text-3xl font-bold text-slate-800 mb-1">Baseline balances</h1>
           <p className="text-slate-500 text-sm">
-            Set account balances as the baseline. Everything is measured from here.
+            Set the correct opening balance for each account. This is the starting point everything is measured from.
           </p>
-          {!cfo && (
-            <div className="mt-3 flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
-              <Lock size={14} className="text-amber-500 flex-shrink-0" />
-              <p className="text-xs text-amber-700">Only the CFO can update the baseline.</p>
-            </div>
-          )}
         </div>
 
         <div className="space-y-6">
@@ -112,10 +95,9 @@ export default function SetupPage() {
                     <input
                       type="number" min="0" step="0.01"
                       value={acc.current_balance || ''}
-                      onChange={(e) => cfo && setBalance(acc.id, e.target.value)}
-                      readOnly={!cfo}
+                      onChange={(e) => setBalance(acc.id, e.target.value)}
                       placeholder="0.00"
-                      className={`flex-1 text-lg font-semibold text-teal-700 border-none outline-none bg-transparent ${!cfo ? 'cursor-not-allowed opacity-60' : ''}`}
+                      className="flex-1 text-lg font-semibold text-teal-700 border-none outline-none bg-transparent"
                     />
                   </div>
                 </div>
@@ -135,10 +117,9 @@ export default function SetupPage() {
                     <input
                       type="number" min="0" step="0.01"
                       value={acc.current_balance || ''}
-                      onChange={(e) => cfo && setBalance(acc.id, e.target.value)}
-                      readOnly={!cfo}
+                      onChange={(e) => setBalance(acc.id, e.target.value)}
                       placeholder="0.00"
-                      className={`flex-1 text-lg font-semibold text-red-600 border-none outline-none bg-transparent ${!cfo ? 'cursor-not-allowed opacity-60' : ''}`}
+                      className="flex-1 text-lg font-semibold text-red-600 border-none outline-none bg-transparent"
                     />
                   </div>
                 </div>
@@ -162,16 +143,14 @@ export default function SetupPage() {
             </div>
           </div>
 
-          {cfo && (
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="w-full bg-teal-600 text-white font-bold text-lg py-4 rounded-2xl transition hover:bg-teal-700 active:bg-teal-800 disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              {saving && <Loader2 size={20} className="animate-spin" />}
-              {saving ? 'Saving...' : 'Save baseline'}
-            </button>
-          )}
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="w-full bg-teal-600 text-white font-bold text-lg py-4 rounded-2xl transition hover:bg-teal-700 active:bg-teal-800 disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {saving && <Loader2 size={20} className="animate-spin" />}
+            {saving ? 'Saving...' : 'Save baseline'}
+          </button>
         </div>
       </div>
     </div>
