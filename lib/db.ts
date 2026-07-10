@@ -145,7 +145,7 @@ export async function getKnownNames(): Promise<string[]> {
     .select('counterparty_name')
     .neq('counterparty_name', '')
   if (!data) return []
-  return [...new Set(data.map((r: { counterparty_name: string }) => r.counterparty_name))].sort()
+  return Array.from(new Set(data.map((r: { counterparty_name: string }) => r.counterparty_name))).sort()
 }
 
 // ── Auth (local only — single shared password) ────────────────────────────────
