@@ -18,7 +18,7 @@ export default function BottomNav() {
 
   function handleLogout() {
     setAuthed(false)
-    router.replace('/')
+    window.location.href = '/'
   }
 
   return (
