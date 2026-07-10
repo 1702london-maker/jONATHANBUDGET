@@ -6,8 +6,14 @@
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0D9488",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
+  "scope": "/",
   "icons": [
+    {
+      "src": "/apple-icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
@@ -21,5 +27,6 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["finance", "productivity"]
+  "categories": ["finance", "productivity"],
+  "prefer_related_applications": false
 }
