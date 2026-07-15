@@ -8,6 +8,7 @@ import {
   formatCurrency, calcStreak, todayStats, monthStats,
   byCategory, byPerson, CATEGORY_LABELS, CATEGORY_BAR_COLORS,
   calcNetCurrent, calcNetPosition, calcCashAtHand, calcTotalCreditOwed,
+  calcTotalPots, calcTrueNetWorth,
   isCfoRetainerOverdue,
 } from '@/lib/utils'
 import { Transaction, Account, Pot } from '@/lib/types'
@@ -79,6 +80,8 @@ export default function Home() {
   const netPosition = calcNetPosition(accounts)
   const cashAtHand = calcCashAtHand(accounts)
   const creditOwed = calcTotalCreditOwed(accounts)
+  const totalPots = calcTotalPots(pots)
+  const trueNetWorth = calcTrueNetWorth(accounts, pots)
   const creditAccounts = accounts.filter((a) => a.type === 'credit')
   const cfoRetainer = pots.find((p) => p.id === 'pot-cfo')
   const cfoOverdue = cfoRetainer ? isCfoRetainerOverdue(cfoRetainer) : false
@@ -146,6 +149,17 @@ export default function Home() {
               {formatCurrency(netPosition)}
             </p>
             <p className="text-xs text-slate-400 mt-1">After all card balances</p>
+          </div>
+        </div>
+
+        {/* True Net Worth — includes pots */}
+        <div className="bg-teal-600 rounded-xl p-4 flex items-center justify-between">
+          <div>
+            <p className="text-xs text-teal-100 font-semibold uppercase tracking-wide mb-1">True Net Worth</p>
+            <p className={`text-2xl font-bold ${trueNetWorth >= 0 ? 'text-white' : 'text-red-200'}`}>
+              {formatCurrency(trueNetWorth)}
+            </p>
+            <p className="text-xs text-teal-200 mt-1">Net position + {formatCurrency(totalPots)} in pots</p>
           </div>
         </div>
 

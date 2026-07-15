@@ -131,6 +131,14 @@ export function calcTotalCreditOwed(accounts: Account[]): number {
     .reduce((s, a) => s + a.current_balance, 0)
 }
 
+export function calcTotalPots(pots: Pot[]): number {
+  return pots.reduce((s, p) => s + Number(p.current_balance), 0)
+}
+
+export function calcTrueNetWorth(accounts: Account[], pots: Pot[]): number {
+  return calcNetPosition(accounts) + calcTotalPots(pots)
+}
+
 export function isCfoRetainerOverdue(pot: Pot): boolean {
   if (pot.id !== 'pot-cfo') return false
   if (!pot.due_day) return false
