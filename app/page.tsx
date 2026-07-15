@@ -47,10 +47,7 @@ export default function Home() {
 
   useEffect(() => {
     if (!authed) return
-    getAccounts().then((accs) => {
-      if (accs.length === 0) { router.replace('/setup'); return }
-      load()
-    })
+    load()
   }, [authed, load, router])
 
   // Real-time: any change on any device instantly refreshes everyone
