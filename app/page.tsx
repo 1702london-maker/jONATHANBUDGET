@@ -47,8 +47,8 @@ export default function Home() {
 
   useEffect(() => {
     if (!authed) return
-    getSettings().then((s) => {
-      if (!s.baseline_set) { router.replace('/setup'); return }
+    getAccounts().then((accs) => {
+      if (accs.length === 0) { router.replace('/setup'); return }
       load()
     })
   }, [authed, load, router])
