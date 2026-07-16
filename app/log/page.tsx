@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Direction, Method, Category, BusinessOrPersonal, QuickChip, Account } from '@/lib/types'
-import { saveTransaction, getKnownNames, isAuthed, getAccounts, getSettings } from '@/lib/db'
+import { saveTransaction, getKnownNames, isAuthed, getAccounts, getSettings, upsertAccount } from '@/lib/db'
 import { CATEGORY_LABELS, formatCurrency } from '@/lib/utils'
 import { v4 as uuidv4 } from 'uuid'
 import { ChevronLeft, CheckCircle, CreditCard, Loader2 } from 'lucide-react'
@@ -42,6 +42,8 @@ export default function LogPage() {
   const [isCardPayment, setIsCardPayment] = useState(false)
   const [linkedCardId, setLinkedCardId] = useState('')
   const [creditCards, setCreditCards] = useState<Account[]>([])
+  const [allAccounts, setAllAccounts] = useState<Account[]>([])
+  const [selectedAccountId, setSelectedAccountId] = useState('')
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -51,6 +53,7 @@ export default function LogPage() {
     async function init() {
       const [names, accs, settings] = await Promise.all([getKnownNames(), getAccounts(), getSettings()])
       setAllNames(names)
+      setAllAccounts(accs)
       setCreditCards(accs.filter((a) => a.type === 'credit'))
       setSpendThreshold(settings.spend_alert_threshold)
     }
@@ -83,6 +86,7 @@ export default function LogPage() {
     if (!category) { setError('Choose a category.'); return }
     if (!bop) { setError('Choose Business or Personal.'); return }
     if (isCardPayment && !linkedCardId) { setError('Select which card this payment is reducing.'); return }
+    if (!selectedAccountId) { setError('Select which account this affects.'); return }
 
     setSaving(true)
     const isHighValue = direction === 'out' && amt >= spendThreshold
@@ -101,6 +105,13 @@ export default function LogPage() {
       created_at: new Date().toISOString(),
       flagged: false,
     })
+
+    // Update the selected account's balance
+    const acc = allAccounts.find((a) => a.id === selectedAccountId)
+    if (acc) {
+      const newBalance = Number(acc.current_balance) + (direction === 'in' ? amt : -amt)
+      await upsertAccount({ ...acc, current_balance: newBalance, last_updated_at: new Date().toISOString() })
+    }
 
     setSaving(false)
     if (isHighValue) setSpendAlert(true)
@@ -176,6 +187,28 @@ export default function LogPage() {
                 }`}
               >
                 {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Account</label>
+          <div className="grid grid-cols-2 gap-2">
+            {allAccounts.map((acc) => (
+              <button
+                key={acc.id}
+                onClick={() => setSelectedAccountId(acc.id)}
+                className={`py-3 px-3 rounded-xl font-medium text-sm border-2 transition text-left ${
+                  selectedAccountId === acc.id
+                    ? 'bg-teal-600 text-white border-teal-600'
+                    : 'bg-white text-slate-600 border-slate-200'
+                }`}
+              >
+                <span className="block truncate">{acc.name}</span>
+                <span className={`text-xs ${selectedAccountId === acc.id ? 'text-teal-100' : 'text-slate-400'}`}>
+                  {formatCurrency(Number(acc.current_balance))}
+                </span>
               </button>
             ))}
           </div>
