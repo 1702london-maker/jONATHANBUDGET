@@ -108,27 +108,27 @@ export function byPerson(transactions: Transaction[], days = 30) {
 export function calcNetCurrent(accounts: Account[]): number {
   return accounts
     .filter((a) => a.type === 'current' || a.type === 'cash')
-    .reduce((s, a) => s + a.current_balance, 0)
+    .reduce((s, a) => s + Number(a.current_balance), 0)
 }
 
 export function calcNetPosition(accounts: Account[]): number {
   const current = calcNetCurrent(accounts)
   const creditDebt = accounts
     .filter((a) => a.type === 'credit')
-    .reduce((s, a) => s + a.current_balance, 0)
+    .reduce((s, a) => s + Number(a.current_balance), 0)
   return current - creditDebt
 }
 
 export function calcCashAtHand(accounts: Account[]): number {
   return accounts
     .filter((a) => a.type === 'cash')
-    .reduce((s, a) => s + a.current_balance, 0)
+    .reduce((s, a) => s + Number(a.current_balance), 0)
 }
 
 export function calcTotalCreditOwed(accounts: Account[]): number {
   return accounts
     .filter((a) => a.type === 'credit')
-    .reduce((s, a) => s + a.current_balance, 0)
+    .reduce((s, a) => s + Number(a.current_balance), 0)
 }
 
 export function calcTotalPots(pots: Pot[]): number {
